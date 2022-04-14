@@ -11,7 +11,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class FirstTest {
 
@@ -180,14 +182,14 @@ public class FirstTest {
                     "Cannot find search input",
                     5
             );
-///////////////////////////////////////////////////////////////////////////////////////////////////
+            ////
             System.out.println("Count of elements is "+
                     assertElementHasChildren(
                         "org.wikipedia:id/page_list_item_container",
                         "Cannot find list of search results (Ex3)"
                 )
             );
-///////////////////////////////////////////////////////////////////////////////////////////////////
+            ////
             waitForElementAndClear(
                     By.id("org.wikipedia:id/search_src_text"),
                     "Cannot find search field",
@@ -205,6 +207,33 @@ public class FirstTest {
                     "X is still present on the page",
                     5
             );
+    }
+
+    @Test
+    public void testCheckWordInSearchResultsEx4()
+    {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "Cannot search 'Search Wikipedia' input",
+                5
+        );
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text,'Search…')]"),
+                "JAVA",
+                "Cannot find search input",
+                5
+        );
+
+        List<String> LS = getWords(
+                "org.wikipedia:id/page_list_item_title",
+                "Cannot find search elements (Ex4)"
+        );
+
+        for (String s : LS) {
+            System.out.println(s);
+            Assert.assertTrue("item don't have word 'Java'",s.contains("Java"));
+        }
     }
     // приватные методы:
 
@@ -261,5 +290,20 @@ public class FirstTest {
         List<WebElement> listWEs = driver.findElementsById(id);
         int length = listWEs.size();
         return length;
+    }
+
+    // ex4 method
+    private List<String> getWords(String id, String error_message){
+        List<WebElement> listWEs = driver.findElementsById(id);
+        List<String> names = new LinkedList<>();
+        ListIterator<WebElement> WEIterator = listWEs.listIterator();
+        int index=0;
+        while (WEIterator.hasNext()) {
+            //String tmp = title_element.getAttribute("text");
+            names.add(listWEs.get(index).getAttribute("text"));
+            WEIterator.next();
+            index+=1;
+        }
+        return names;
     }
 }
