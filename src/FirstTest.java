@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
+import java.util.List;
 
 public class FirstTest {
 
@@ -159,6 +160,52 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void testCancelSearchEx3()
+        /* находим поле ввода с надписью 'Search Wikipedia' по его id и кликаем на нем
+    появляется поле ввода с надписью 'Search...'. Находим его и посылаем в него текст 'Kotlin'. Далее происходит поиск
+    Убеждаемся, что найдено несколько статей
+    ищем кнопку закрытия по id и нажимаем ее
+    ещё раз ищем кнопку закрытия и убеждаемся, что её нет, тем самым убеждаемся, что результат поиска пропал */
+        {
+            waitForElementAndClick(
+                    By.id("org.wikipedia:id/search_container"),
+                    "Cannot search 'Search Wikipedia' input",
+                    5
+            );
+
+            waitForElementAndSendKeys(
+                    By.xpath("//*[contains(@text,'Search…')]"),
+                    "Kotlin",
+                    "Cannot find search input",
+                    5
+            );
+///////////////////////////////////////////////////////////////////////////////////////////////////
+            System.out.println("Count of elements is "+
+                    assertElementHasChildren(
+                        "org.wikipedia:id/page_list_item_container",
+                        "Cannot find list of search results (Ex3)"
+                )
+            );
+///////////////////////////////////////////////////////////////////////////////////////////////////
+            waitForElementAndClear(
+                    By.id("org.wikipedia:id/search_src_text"),
+                    "Cannot find search field",
+                    5
+            );
+
+            waitForElementAndClick(
+                    By.id("org.wikipedia:id/search_close_btn"),
+                    "Cannot find X to cancel search",
+                    5
+            );
+
+            waitForElementNotPresent(
+                    By.id("org.wikipedia:id/search_close_btn"),
+                    "X is still present on the page",
+                    5
+            );
+    }
     // приватные методы:
 
     private WebElement waitForElementPresent(By by, String error_message, long timeoutInSeconds){
@@ -207,5 +254,12 @@ public class FirstTest {
         return wait.until(
                 ExpectedConditions.textToBePresentInElementLocated(by,value)
         );
+    }
+
+    // ex3 method
+    private int assertElementHasChildren(String id, String error_message){
+        List<WebElement> listWEs = driver.findElementsById(id);
+        int length = listWEs.size();
+        return length;
     }
 }
