@@ -536,6 +536,32 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void testAssertElementPresentEx6(){ // Ex6 test
+        waitForElementAndClick(
+                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
+                "Cannot search 'Search Wikipedia' input",
+                5
+        );
+
+        String search_line = "Java";
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text,'Search…')]"),
+                search_line,
+                "Cannot find search input",
+                5
+        );
+
+        String search_result_locator = "org.wikipedia:id/title";
+
+        assertElementPresent(
+                By.id(search_result_locator),
+                "cannot find some results by request " + search_line
+        );
+    }
+
+
     // приватные методы:
 
     private WebElement waitForElementPresent(By by, String error_message, long timeoutInSeconds){
@@ -675,5 +701,14 @@ public class FirstTest {
     private String waitForElementAndGetAttribute(By by, String attribute, String error_message, long timeoutInSeconds){
         WebElement element = waitForElementPresent(by,error_message,timeoutInSeconds);
         return element.getAttribute(attribute);
+    }
+
+    // Ex6 method
+    private void assertElementPresent(By by, String error_message) {
+        int amount_of_elements = getAmountOfElements(by);
+        if (amount_of_elements == 0) {
+            String default_message = "An element '" + by.toString() + "' supposed to be present";
+            throw new AssertionError(default_message + " " + error_message);
+        }
     }
 }
