@@ -1,4 +1,5 @@
 import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.android.AndroidDriver;
 import org.junit.After;
@@ -269,11 +270,6 @@ public class FirstTest {
                 15
         );
 
-        /*swipeUp(2000);
-        swipeUp(2000);
-        swipeUp(2000);
-        swipeUp(2000);
-        swipeUp(2000);*/
         swipeUpToFindElement(
                 By.xpath("//*[@text='View page in browser']"),
                 "Cannot find the end of article",
@@ -282,109 +278,8 @@ public class FirstTest {
     }
 
     @Test
-    public void saveFirstArticleToMyList(){ // так и не заработал
-        waitForElementAndClick(
-                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
-                "Cannot search 'Search Wikipedia' input",
-                5
-        );
-
-        waitForElementAndSendKeys(
-                By.xpath("//*[contains(@text,'Search…')]"),
-                "Java",
-                "Cannot find search input",
-                5
-        );
-
-        waitForElementAndClick(
-                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
-                "Cannot find 'Object-oriented programming language' topic searching by 'Java'",
-                5);
-
-        waitForElementPresent(
-                By.id("org.wikipedia:id/view_page_title_text"),
-                "Cannot find article title",
-                15
-        );
-
-        waitForElementAndClick(
-                By.xpath("//android.widget.ImageView[@content-desc='More options']"), // work OK!
-                "Cannot find button to open article options",
-                5);
-
-        /*waitForElementAndClick(////////////////// ERROR
-                By.id("org.wikipedia:id/title"),
-                //By.xpath("//android.widget.TextView[@content-desc='Add to reading list']"),
-                //By.xpath("//*[@text='Add to reading list']"), // ERROR: tap on change language !
-                "Cannot find option to add article to reading list",
-                5);*/
-
-        List<WebElement> listWEs = driver.findElementsById("org.wikipedia:id/title");
-        int size = listWEs.size();
-        for (int idx=0; idx< size; idx++){
-            WebElement we = listWEs.get(idx);
-            if ( we.getText().contains("Add to reading list") ){
-                we.click(); // dbg OK!
-            }
-        }
-
-        WebElement webE = driver.findElementById("org.wikipedia:id/onboarding_button"); // NOT FOUND!
-        if (webE.getText().contains("GOT IT"))
-        {
-            System.out.println(webE.getText());
-            webE.click();
-        }
-        /*waitForElementAndClick( //// ERROR not found!
-                By.xpath("//android.widget.TextView[@text='GOT IT']"),
-                //By.id("org.wikipedia:id/onboarding_button"),
-                "Cannot find 'Got it' tip overlay",
-                30);*/
-
-        waitForElementAndClear(
-                By.id("org.wikipedia:id/text_input"),
-                "Cannot find input to set name of articles folder",
-                5
-        );
-
-        String name_of_folder = "Learning programming";
-
-        waitForElementAndSendKeys(
-                By.id("org.wikipedia:id/text_input"),
-                name_of_folder,
-                "Cannot put text into article folder input",
-                5
-        );
-
-        waitForElementAndClick(
-                By.xpath("//*[@text='OK']"),
-                "Cannot press OK button",
-                5);
-
-        waitForElementAndClick(
-                By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-                "Cannot close article, cannot find X link",
-                5);
-
-        waitForElementAndClick(
-                By.xpath("//android.widget.FrameLayout[@content-desc='My lists']"),
-                "Cannot find navigation button to My list",
-                5);
-
-        waitForElementAndClick(
-                By.xpath("//*[@text='"+name_of_folder+"']"),
-                "Cannot find created folder",
-                5);
-
-        swipeElementToLeft(
-                By.xpath("//*[@text='Java (programming language)']"),
-                "Cannot find saved article"
-        );
-
-        waitForElementNotPresent(
-                By.xpath("//*[@text='Java (programming language)']"),
-                "Cannot delete saved article",
-                5
-        );
+    public void saveFirstArticleToMyList(){
+        saveFirstArticleToMyListEx();
     }
 
     @Test
@@ -564,7 +459,37 @@ public class FirstTest {
         );
     }
 
+    @Test
+    public void saveTwoArticlesToMyListEx5(){
+        // сначала добавляем две статьи в папку
+        saveFirstArticleToMyListEx();
+        saveSecondArticleToMyList();
 
+        // затем одну удаляем
+        waitForElementAndClick( // найти и кликнуть на раздел 'my lists'
+                By.xpath("//android.widget.FrameLayout[@content-desc='My lists']"),
+                "Cannot find navigation button to My list",
+                15);
+
+        waitForElementAndClick( // найти и кликнуть на созданную ранее папку 'Learning programming'
+                By.xpath("//*[@text='Learning programming']"),
+                "Cannot find created folder",
+                15);
+
+        swipeElementToLeft( // свайпнуть влево тем самым удалив статью
+                By.xpath("//*[@text='Learning programming']"),
+                "Cannot find saved article"
+        );
+
+        waitForElementNotPresent( // убедиться, что статьи нет
+                By.xpath("//*[@text='Java (programming language)']"),
+                "Cannot delete saved article",
+                15
+        );
+    }
+
+
+    //---------------------------
     // приватные методы:
 
     private WebElement waitForElementPresent(By by, String error_message, long timeoutInSeconds){
@@ -589,6 +514,13 @@ public class FirstTest {
         WebElement element = waitForElementPresent(by,error_message,timeoutInSeconds);
         element.sendKeys(value);
         return element;
+    }
+
+    private WebElement waitForElementAndSetValue(By by, String value, String error_message, long timeoutInSeconds){
+        WebElement el = waitForElementPresent(by,error_message,timeoutInSeconds);
+        MobileElement me = (MobileElement) el;
+        me.setValue(value);
+        return el;
     }
 
     private boolean waitForElementNotPresent(By by, String error_message, long timeoutInSeconds){
@@ -673,6 +605,7 @@ public class FirstTest {
                 by,
                 error_message,
                 10);
+
         int left_x = element.getLocation().getX();
         int right_x = left_x + element.getSize().getWidth();
         int upper_y = element.getLocation().getY();
@@ -704,6 +637,116 @@ public class FirstTest {
     private String waitForElementAndGetAttribute(By by, String attribute, String error_message, long timeoutInSeconds){
         WebElement element = waitForElementPresent(by,error_message,timeoutInSeconds);
         return element.getAttribute(attribute);
+    }
+
+    // Ex5 methods
+    private void saveFirstArticleToMyListEx(){
+        waitForElementAndClick(
+                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
+                "Cannot search 'Search Wikipedia' input",
+                5
+        );
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text,'Search…')]"),
+                "Java",
+                "Cannot find search input",
+                5
+        );
+
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
+                "Cannot find 'Object-oriented programming language' topic searching by 'Java'",
+                5);
+
+        waitForElementPresent(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "Cannot find article title",
+                15
+        );
+
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageView[@content-desc='More options']"), // меню ...
+                "Cannot find button to open article options",
+                5);
+
+        waitForElementAndClick( // элемент меню 'Add to reading list'
+                By.xpath("/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.ListView/android.widget.LinearLayout[3]/android.widget.RelativeLayout/android.widget.TextView"),
+                "Cannot find option to add article to reading list",
+                5);
+
+        waitForElementAndClick( // нажать кнопку 'GOT IT'
+                By.xpath("//android.widget.TextView[@text='GOT IT']"),
+                "Cannot find 'Got it' tip overlay",
+                30);
+
+        waitForElementAndClear( // очистить поле ввода
+                By.id("org.wikipedia:id/text_input"),
+                "Cannot find input to set name of articles folder",
+                5
+        );
+
+        waitForElementAndSetValue(
+                By.id("org.wikipedia:id/text_input"),
+                "Learning programming",
+                "Cannot put text into article folder input",
+                5);
+
+        waitForElementAndClick( // нажать кнопку "ОК"
+                By.xpath("//*[@text='OK']"),
+                "Cannot press OK button",
+                5);
+
+        waitForElementAndClick( // нажать кнопку закрытия
+                By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+                "Cannot close article, cannot find X link",
+                15);
+    }
+
+    private void saveSecondArticleToMyList() {
+        waitForElementAndClick(
+                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
+                "Cannot search 'Search Wikipedia' input",
+                5
+        );
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text,'Search…')]"),
+                "Java",
+                "Cannot find search input",
+                5
+        );
+
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Island of Indonesia']"),
+                "Cannot find 'Island of Indonesia' topic searching by 'Java'",
+                5);
+
+        waitForElementPresent(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "Cannot find article title",
+                15
+        );
+
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageView[@content-desc='More options']"), // меню ...
+                "Cannot find button to open article options",
+                5);
+
+        waitForElementAndClick( // элемент меню 'Add to reading list'
+                By.xpath("/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.ListView/android.widget.LinearLayout[3]/android.widget.RelativeLayout/android.widget.TextView"),
+                "Cannot find option to add article to reading list",
+                5);
+
+        waitForElementAndClick( // найти уже существующий список 'Learning programming'
+                By.xpath("//android.widget.TextView[@text='Learning programming']"),
+                "Cannot find 'Learning programming' list overlay",
+                30);
+
+        waitForElementAndClick( // нажать кнопку закрытия
+                By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+                "Cannot close article, cannot find X link",
+                15);
     }
 
     // Ex6 method
