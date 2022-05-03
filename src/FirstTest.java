@@ -1,5 +1,5 @@
 import lib.CoreTestCase;
-import lib.ui.MainPageObject;
+import lib.ui.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -11,7 +11,7 @@ public class FirstTest extends CoreTestCase {
 
     private MainPageObject MainPageObject;
 
-    protected void Setup() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
 
         MainPageObject = new MainPageObject(driver);
@@ -20,24 +20,12 @@ public class FirstTest extends CoreTestCase {
     @Test
     public void testSearch() /* в приложении wikipedia.apk находим поле ввода с надписью 'Search wikipedia' и кликаем на нем
      появляется поле ввода с надписью 'Search...'. Находим его и посылаем в него текст 'Java'. Далее происходит поиск и
-      мы определяем есть ли в найденном строка oop lang */ {
-        MainPageObject.waitForElementAndClick(
-                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
-                "Cannot search Search Wikipedia input",
-                5
-        );
-
-        MainPageObject.waitForElementAndSendKeys(
-                By.xpath("//*[contains(@text,'Search…')]"),
-                "Java",
-                "Cannot find search input",
-                5
-        );
-
-        MainPageObject.waitForElementPresent(
-                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
-                "Cannot find 'Object-oriented programming language' topic searching by 'Java'",
-                15);
+      мы определяем есть ли в найденном строка oop lang */
+    {
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+        SearchPageObject.typeSearchLine("Java");
+        SearchPageObject.waitForSearchResult("Object-oriented programming language");
     }
 
     @Test
@@ -45,37 +33,14 @@ public class FirstTest extends CoreTestCase {
     появляется поле ввода с надписью 'Search...'. Находим его и посылаем в него текст 'Java'. Далее происходит поиск
     находим поле ввода по id и стираем ранее введеный запрос 'Java'
     ищем кнопку закрытия по id и нажимаем ее
-    ещё раз ищем кнопку закрытия и убеждаемся, что её нет. */ {
-        MainPageObject.waitForElementAndClick(
-                By.id("org.wikipedia:id/search_container"),
-                "Cannot search 'Search Wikipedia' input",
-                5
-        );
-
-        MainPageObject.waitForElementAndSendKeys(
-                By.xpath("//*[contains(@text,'Search…')]"),
-                "Java",
-                "Cannot find search input",
-                5
-        );
-
-        MainPageObject.waitForElementAndClear(
-                By.id("org.wikipedia:id/search_src_text"),
-                "Cannot find search field",
-                5
-        );
-
-        MainPageObject.waitForElementAndClick(
-                By.id("org.wikipedia:id/search_close_btn"),
-                "Cannot find X to cancel search",
-                5
-        );
-
-        MainPageObject.waitForElementNotPresent(
-                By.id("org.wikipedia:id/search_close_btn"),
-                "X is still present on the page",
-                5
-        );
+    ещё раз ищем кнопку закрытия и убеждаемся, что её нет. */
+    {
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+        //SearchPageObject.typeSearchLine("Java");
+        SearchPageObject.waitForCancelButtonToAppear();
+        SearchPageObject.clickCancelSearch();
+        SearchPageObject.waitForCancelButtonToDisappear();
     }
 
     @Test
@@ -85,32 +50,15 @@ public class FirstTest extends CoreTestCase {
        далее находим по id заголовок открытой статьи (про яву)
        получаем текст этого заголовка
        удостоверяемся, что это текст: 'Java (programming language)'
-       */ {
-        MainPageObject.waitForElementAndClick(
-                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
-                "Cannot search 'Search Wikipedia' input",
-                5
-        );
+       */
+    {
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+        SearchPageObject.typeSearchLine("Java");
+        SearchPageObject.clickByArticleWithSubstring("Object-oriented programming language");
 
-        MainPageObject.waitForElementAndSendKeys(
-                By.xpath("//*[contains(@text,'Search…')]"),
-                "Java",
-                "Cannot find search input",
-                5
-        );
-
-        MainPageObject.waitForElementAndClick(
-                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
-                "Cannot find 'Object-oriented programming language' topic searching by 'Java'",
-                15);
-
-        WebElement title_element = MainPageObject.waitForElementPresent(
-                By.id("org.wikipedia:id/view_page_title_text"),
-                "Cannot find article title",
-                15
-        );
-
-        String article_title = title_element.getAttribute("text");
+        ArticlePageObject ArticlePageObject = new ArticlePageObject(driver);
+        String article_title = ArticlePageObject.getArticleTitle();
 
         Assert.assertEquals(
                 "We see unexpected title",
@@ -209,40 +157,39 @@ public class FirstTest extends CoreTestCase {
 
     @Test
     public void testSwipeArticle() /* swipe test */ {
-        MainPageObject.waitForElementAndClick(
-                By.xpath("//*[contains(@text,'Search Wikipedia')]"),
-                "Cannot search 'Search Wikipedia' input",
-                5
-        );
 
-        MainPageObject.waitForElementAndSendKeys(
-                By.xpath("//*[contains(@text,'Search…')]"),
-                "Appium",
-                "Cannot find search input",
-                5
-        );
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+        SearchPageObject.typeSearchLine("Appium");
+        SearchPageObject.clickByArticleWithSubstring("Appium");
 
-        MainPageObject.waitForElementAndClick(
-                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title'][@text='Appium']"),
-                "Cannot find 'Appium' title in search",
-                5);
-
-        MainPageObject.waitForElementPresent(
-                By.id("org.wikipedia:id/view_page_title_text"),
-                "Cannot find article title",
-                15
-        );
-
-        MainPageObject.swipeUpToFindElement(
-                By.xpath("//*[@text='View page in browser']"),
-                "Cannot find the end of article",
-                20
-        );
+        ArticlePageObject ArticlePageObject = new ArticlePageObject(driver);
+        ArticlePageObject.waitForTitleElement();
+        ArticlePageObject.swipeToFooter();
     }
 
     @Test
     public void testSaveFirstArticleToMyList() {
-        MainPageObject.saveFirstArticleToMyListEx();
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+        SearchPageObject.typeSearchLine("Java");
+        SearchPageObject.clickByArticleWithSubstring("Object-oriented programming language");
+
+        ArticlePageObject ArticlePageObject = new ArticlePageObject(driver);
+        ArticlePageObject.waitForTitleElement();
+        String article_title = ArticlePageObject.getArticleTitle();
+        String name_of_folder = "Learning programming";
+        ArticlePageObject.addArticleToMyList(name_of_folder);
+        ArticlePageObject.closeArticle();
+
+        NavigationUI NavigationUI = new NavigationUI(driver);
+        NavigationUI.clickMyLists();
+
+        MyListsPageObject MyListPageObject = new MyListsPageObject(driver);
+        MyListPageObject.openFolderByName(name_of_folder);
+        MyListPageObject.swipeByArticleToDelete(article_title);
+
+        //MainPageObject.saveFirstArticleToMyListEx();
     }
 
     @Test
