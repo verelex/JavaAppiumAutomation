@@ -81,7 +81,10 @@ public class FirstTest extends CoreTestCase {
     Убеждаемся, что найдено несколько статей
     ищем кнопку закрытия по id и нажимаем ее
     ещё раз ищем кнопку закрытия и убеждаемся, что её нет, тем самым убеждаемся, что результат поиска пропал */ {
-        MainPageObject.waitForElementAndClick(
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+
+        /*MainPageObject.waitForElementAndClick(
                 By.id("org.wikipedia:id/search_container"),
                 "Cannot search 'Search Wikipedia' input",
                 5
@@ -92,9 +95,12 @@ public class FirstTest extends CoreTestCase {
                 "Kotlin",
                 "Cannot find search input",
                 5
-        );
+        );*/
+        SearchPageObject.typeSearchLine("Kotlin");
         ////
-        System.out.println("Count of elements is " +
+        SearchPageObject.clickCloseButton();
+
+        /*System.out.println("Count of elements is " +
                 MainPageObject.assertElementHasChildren(
                         "org.wikipedia:id/page_list_item_container",
                         "Cannot find list of search results (Ex3)"
@@ -117,7 +123,7 @@ public class FirstTest extends CoreTestCase {
                 By.id("org.wikipedia:id/search_close_btn"),
                 "X is still present on the page",
                 5
-        );
+        );*/
     }
 
     /*@Test
@@ -254,7 +260,15 @@ public class FirstTest extends CoreTestCase {
 
     @Test
     public void testAssertElementPresentEx6() { // Ex6 test
-        MainPageObject.waitForElementAndClick(
+        /* тест, который открывает статью и убеждается, что у нее есть элемент title
+        * тест не должен дожидаться появления title, проверка должна производиться сразу */
+
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        SearchPageObject.initSearchInput();
+        String search_line = "Java";
+        SearchPageObject.typeSearchLine(search_line);
+        //
+        /*MainPageObject.waitForElementAndClick(
                 By.xpath("//*[contains(@text,'Search Wikipedia')]"),
                 "Cannot search 'Search Wikipedia' input",
                 5
@@ -267,11 +281,11 @@ public class FirstTest extends CoreTestCase {
                 search_line,
                 "Cannot find search input",
                 5
-        );
+        );*/
 
         String search_result_locator = "org.wikipedia:id/title";
-
-        MainPageObject.assertElementPresent(
+        SearchPageObject.assertElementPresent(
+        //MainPageObject.assertElementPresent(
                 By.id(search_result_locator),
                 "cannot find some results by request " + search_line
         );
@@ -279,8 +293,17 @@ public class FirstTest extends CoreTestCase {
 
     @Test
     public void testSaveTwoArticlesToMyListEx5() { // Ex5 test
+        /* тест, который:
+        * 1. сохраняет две статьи в одну папку
+        * 2. удаляет одну из статей
+        * 3. убеждается, что вторая осталась
+        * 4. переходит в нее и убеждается, что совпадает title */
+
+        SearchPageObject SearchPageObject = new SearchPageObject(driver);
+        //SearchPageObject.initSearchInput();
+        SearchPageObject.deleteSecond();
         // сначала добавляем две статьи в папку
-        MainPageObject.saveFirstArticleToMyListEx();
+        /*MainPageObject.saveFirstArticleToMyListEx();
         MainPageObject.saveSecondArticleToMyList();
 
         // затем одну удаляем
@@ -303,6 +326,6 @@ public class FirstTest extends CoreTestCase {
                 By.xpath("//*[@text='Java (programming language)']"),
                 "Cannot delete saved article",
                 15
-        );
+        );*/
     }
 }

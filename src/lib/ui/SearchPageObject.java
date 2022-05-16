@@ -68,4 +68,59 @@ public class SearchPageObject extends MainPageObject {
     public void assertThereIsNotResultOfSearch(){
         this.assertElementNotPresent(By.xpath(SEARCH_RESULT_ELEMENT),"We supposed not to find any result");
     }
+
+    public void clickCloseButton(){
+        System.out.println("Count of elements is " +
+                this.assertElementHasChildren(
+                        "org.wikipedia:id/page_list_item_container",
+                        "Cannot find list of search results (Ex3)"
+                )
+        );
+        ////
+        this.waitForElementAndClear(
+                By.id("org.wikipedia:id/search_src_text"),
+                "Cannot find search field",
+                5
+        );
+
+        this.waitForElementAndClick(
+                By.id("org.wikipedia:id/search_close_btn"),
+                "Cannot find X to cancel search",
+                5
+        );
+
+        this.waitForElementNotPresent(
+                By.id("org.wikipedia:id/search_close_btn"),
+                "X is still present on the page",
+                5
+        );
+    }
+
+    public void deleteSecond() {
+        // сначала добавляем две статьи в папку
+        this.saveFirstArticleToMyListEx();
+        this.saveSecondArticleToMyList();
+
+        // затем одну удаляем
+        this.waitForElementAndClick( // найти и кликнуть на раздел 'my lists'
+                By.xpath("//android.widget.FrameLayout[@content-desc='My lists']"),
+                "Cannot find navigation button to My list",
+                15);
+
+        this.waitForElementAndClick( // найти и кликнуть на созданную ранее папку 'Learning programming'
+                By.xpath("//*[@text='Learning programming']"),
+                "Cannot find created folder",
+                15);
+
+        this.swipeElementToLeft( // свайпнуть влево тем самым удалив статью
+                By.xpath("//*[@text='Learning programming']"),
+                "Cannot find saved article"
+        );
+
+        this.waitForElementNotPresent( // убедиться, что статьи нет
+                By.xpath("//*[@text='Java (programming language)']"),
+                "Cannot delete saved article",
+                15
+        );
+    }
 }
